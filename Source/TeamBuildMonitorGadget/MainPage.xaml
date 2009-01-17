@@ -1,0 +1,147 @@
+﻿<Page
+    x:Class="PaulStovell.TeamBuildMonitorGadget.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="MainPage"
+    x:Name="_this"
+    xmlns:tfsbuildcommon="clr-namespace:Microsoft.TeamFoundation.Build.Common;assembly=Microsoft.TeamFoundation.Build.Common"
+    xmlns:local="clr-namespace:PaulStovell.TeamBuildMonitorGadget"
+    Background="Black"
+    >
+    <Page.Resources>
+
+        <RadialGradientBrush x:Key="Local_FailedItemBackgroundBrush">
+            <GradientStop Color="#551111" Offset="0" />
+            <GradientStop Color="#AA3311" Offset="1" />
+        </RadialGradientBrush>
+
+        <RadialGradientBrush x:Key="Local_SuccessfullItemBackgroundBrush">
+            <GradientStop Color="#115511" Offset="0.5" />
+            <GradientStop Color="#337711" Offset="1" />
+        </RadialGradientBrush>
+
+        <RadialGradientBrush x:Key="Local_InProgressItemBackgroundBrush">
+            <GradientStop Color="#111155" Offset="0" />
+            <GradientStop Color="#1133AA" Offset="1" />
+        </RadialGradientBrush>
+
+        <Style TargetType="{x:Type TextBlock}">
+            <Setter Property="Margin" Value="0,2,0,2" />
+        </Style>
+
+        <Style x:Key="Local_BuildSummaryStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border
+                            CornerRadius="3"
+                            BorderBrush="#000000"
+                            BorderThickness="1"
+                            SnapsToDevicePixels="True"
+                            >
+                            <Border
+                                CornerRadius="3"
+                                BorderBrush="#333333"
+                                BorderThickness="1"
+                                Background="{StaticResource Local_InProgressItemBackgroundBrush}"
+                                x:Name="PART_BuildSummaryStyle_Border"
+                                Padding="7"
+                                SnapsToDevicePixels="True"
+                                MouseDown="BuildItem_Clicked"
+                                Tag="{Binding }"
+                                ToolTip="{Binding Path=BuildStatus}"
+                                Cursor="Hand"
+                                >
+                                <DockPanel>
+                                    <TextBlock
+                                        Foreground="White"
+                                        Text="{Binding Path=BuildDate, Converter={StaticResource Converter_DateConverter}, ConverterParameter=hh:mm tt}"
+                                        DockPanel.Dock="Left"
+                                        >
+                                        <TextBlock.BitmapEffect>
+                                            <OuterGlowBitmapEffect GlowColor="Black" GlowSize="5" Noise="0" Opacity="0.5" />
+                                        </TextBlock.BitmapEffect>
+                                    </TextBlock>
+                                    <TextBlock
+                                        Foreground="White"
+                                        Text="{Binding Path=BuildDate, Converter={StaticResource Converter_DateConverter}, ConverterParameter=today}"
+                                        DockPanel.Dock="Right"
+                                        TextAlignment="Right"
+                                        >
+                                        <TextBlock.BitmapEffect>
+                                            <OuterGlowBitmapEffect GlowColor="Black" GlowSize="5" Noise="0" Opacity="0.5" />
+                                        </TextBlock.BitmapEffect>
+                                    </TextBlock>
+                                </DockPanel>
+                            </Border>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Path=BuildStatus}" Value="Failed">
+                                <Setter TargetName="PART_BuildSummaryStyle_Border" Property="Background" Value="{StaticResource Local_FailedItemBackgroundBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Path=BuildStatus}" Value="Successfully Completed">
+                                <Setter TargetName="PART_BuildSummaryStyle_Border" Property="Background" Value="{StaticResource Local_SuccessfullItemBackgroundBrush}" />
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+    
+    <DockPanel MaxWidth="130">
+
+        <TextBlock
+            DockPanel.Dock="Top"
+            TextAlignment="Center"
+            Text="{Binding ElementName=_this, Path=FriendlyName}"
+            Foreground="White"
+            TextWrapping="Wrap"
+            TextTrimming="CharacterEllipsis"
+            >
+            <TextBlock.BitmapEffect>
+                <OuterGlowBitmapEffect GlowColor="#444444" GlowSize="3" Noise="0" Opacity="0.7" />
+            </TextBlock.BitmapEffect>
+        </TextBlock>
+
+        <TextBlock DockPanel.Dock="Bottom" TextAlignment="Center">
+            <Hyperlink Click="SettingsLink_Clicked" Foreground="#CCCCCC">Settings</Hyperlink>
+            <TextBlock.BitmapEffect>
+                <OuterGlowBitmapEffect GlowColor="#444444" GlowSize="3" Noise="0" Opacity="0.7" />
+            </TextBlock.BitmapEffect>
+        </TextBlock>
+
+        <Grid>
+            <ListBox
+                ItemContainerStyle="{StaticResource Local_BuildSummaryStyle}"
+                ItemsSource="{Binding ElementName=_this, Path=BuildStoreDriver.PreviousBuilds}"
+                Padding="0"
+                BorderBrush="Transparent"
+                BorderThickness="0"
+                Background="Transparent"
+                ScrollViewer.CanContentScroll="False"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                Visibility="{Binding ElementName=_this, Path=BuildStoreDriver.LastException, Converter={StaticResource Converter_IsNullVisibilityConverter}}"
+                >
+            </ListBox>
+
+            <TextBlock 
+                Foreground="White" 
+                Visibility="{Binding ElementName=_this, Path=BuildStoreDriver.LastException, Converter={StaticResource Converter_IsNullVisibilityConverter}, ConverterParameter=NOT}"
+                TextWrapping="Wrap"
+                TextTrimming="CharacterEllipsis"
+                >
+                <TextBlock 
+                    TextWrapping="Wrap"
+                    TextTrimming="CharacterEllipsis"
+                    >There was an error communicating with the server. </TextBlock>
+                <Hyperlink Foreground="White" Click="ExceptionDetailsLink_Clicked">View details</Hyperlink>
+                <TextBlock> | </TextBlock>
+                <Hyperlink Foreground="White" Click="TryAgainLink_Clicked">Try again</Hyperlink>
+            </TextBlock>
+
+        </Grid>
+    </DockPanel>
+</Page>

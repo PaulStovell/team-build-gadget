@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<gadget>
+    <name>Team Build Monitor</name>
+    <namespace>PaulStovell.TeamBuildMonitorGadget</namespace>
+    <version>1.0.0.0</version>
+    <author name="Paul Stovell">
+        <info url="http://paulstovell.net/" />
+    </author>
+    <copyright>2007</copyright>
+    <description>Team Build Monitor</description>
+    <icons>
+        <icon height="48" width="48" src="GadgetIcon.gif" />
+    </icons>
+    <hosts>
+        <host name="sidebar">
+            <base type="HTML" apiVersion="1.0.0" src="Gadget.html" />
+            <permissions>full</permissions>
+            <platform minPlatformVersion="0.3" />
+        </host>
+    </hosts>
+</gadget>
